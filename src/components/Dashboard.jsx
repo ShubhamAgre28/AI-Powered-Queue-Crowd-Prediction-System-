@@ -45,8 +45,6 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
   useEffect(() => {
     if (detectionMode === 'crowd' && crowdDensity > 25) {
       if (setHasActiveAlert) setHasActiveAlert(true);
-    } else {
-      if (setHasActiveAlert) setHasActiveAlert(false);
     }
   }, [crowdDensity, detectionMode, setHasActiveAlert]);
 
@@ -195,17 +193,7 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
                 </p>
               )}
 
-              {busiestCounter && busiestCounter.waitTime > 10 && (
-                <div className="alert-card" style={{ marginTop: '16px', background: 'var(--status-red)' + '10', padding: '16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--status-red)' }}>
-                  <h4 style={{ color: 'var(--status-red)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                    <AlertTriangle size={18} /> ⚠ OVERCROWDING PREDICTION
-                  </h4>
-                  <p style={{ margin: '8px 0 0 0', color: 'var(--status-red)' }}>
-                    {busiestCounter.name} is currently experiencing a critical wait time of {busiestCounter.waitTime} minutes. 
-                    Consider opening an additional counter or reallocating staff to assist.
-                  </p>
-                </div>
-              )}
+
             </div>
             
             {fastestCounter && fastestCounter.queueCount > 0 && (

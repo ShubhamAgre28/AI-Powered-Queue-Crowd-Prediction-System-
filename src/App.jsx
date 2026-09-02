@@ -27,6 +27,12 @@ function App() {
   
   const [totalPeople, setTotalPeople] = useState(0);
   const [hasActiveAlert, setHasActiveAlert] = useState(false);
+  
+  useEffect(() => {
+    if (activeTab === 'alerts') {
+      setHasActiveAlert(false);
+    }
+  }, [activeTab]);
 
   const clearMedia = () => {
     setMediaData(null);
