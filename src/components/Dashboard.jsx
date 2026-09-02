@@ -56,21 +56,19 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
 
 
       {/* Mode Toggle Bar */}
-      <div className="clay-card flex-between mode-bar animate-enter stagger-1" style={{ padding: '16px 24px', borderRadius: '100px', flexWrap: 'wrap', gap: '16px' }}>
-        <div className="mode-bar-item" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+      <div className="clay-card mode-bar animate-enter stagger-1">
+        <div className="mode-bar-item">
           <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Analysis Mode</h3>
           <div className="pill-container" style={{ display: 'flex', background: '#f1f5f9', borderRadius: '100px', padding: '4px' }}>
             <button 
-              className={`btn ${detectionMode === 'queue' ? 'primary' : ''}`}
+              className={`btn pill-btn ${detectionMode === 'queue' ? 'primary' : ''}`}
               onClick={() => setDetectionMode('queue')}
-              style={{ borderRadius: '100px', padding: '8px 24px', background: detectionMode === 'queue' ? 'var(--primary-blue)' : 'transparent', color: detectionMode === 'queue' ? 'white' : 'var(--text-secondary)' }}
             >
               Queue Management
             </button>
             <button 
-              className={`btn ${detectionMode === 'crowd' ? 'primary' : ''}`}
+              className={`btn pill-btn ${detectionMode === 'crowd' ? 'primary' : ''}`}
               onClick={() => setDetectionMode('crowd')}
-              style={{ borderRadius: '100px', padding: '8px 24px', background: detectionMode === 'crowd' ? 'var(--primary-blue)' : 'transparent', color: detectionMode === 'crowd' ? 'white' : 'var(--text-secondary)' }}
             >
               Crowd Analytics
             </button>
@@ -78,21 +76,19 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
         </div>
         
         {detectionMode === 'queue' && (
-          <div className="mode-bar-item" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="mode-bar-item">
             <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Camera Angle</h3>
             <div className="pill-container" style={{ display: 'flex', background: '#f1f5f9', borderRadius: '100px', padding: '4px' }}>
               <button 
-                className={`btn ${cameraAngle === 'top' ? 'primary' : ''}`}
+                className={`btn pill-btn ${cameraAngle === 'top' ? 'primary' : ''}`}
                 onClick={() => setCameraAngle('top')}
-                style={{ borderRadius: '100px', padding: '8px 16px', background: cameraAngle === 'top' ? 'var(--primary-blue)' : 'transparent', color: cameraAngle === 'top' ? 'white' : 'var(--text-secondary)' }}
                 title="Counter is at the top of the screen (people facing away)"
               >
                 Counter Top
               </button>
               <button 
-                className={`btn ${cameraAngle === 'bottom' ? 'primary' : ''}`}
+                className={`btn pill-btn ${cameraAngle === 'bottom' ? 'primary' : ''}`}
                 onClick={() => setCameraAngle('bottom')}
-                style={{ borderRadius: '100px', padding: '8px 16px', background: cameraAngle === 'bottom' ? 'var(--primary-blue)' : 'transparent', color: cameraAngle === 'bottom' ? 'white' : 'var(--text-secondary)' }}
                 title="Counter is at the bottom of the screen (people facing camera)"
               >
                 Counter Bottom
@@ -100,23 +96,10 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             </div>
           </div>
         )}
-        <div className="clear-btn-container" style={{ marginLeft: 'auto' }}>
+        <div className="clear-btn-container">
           <button 
-            className="btn" 
+            className="btn clear-video-btn" 
             onClick={clearMedia} 
-            style={{ 
-              background: 'var(--status-red)', 
-              color: 'white', 
-              borderRadius: '100px', 
-              padding: '8px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
-            }}
           >
             <X size={18} /> Clear Video
           </button>

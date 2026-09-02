@@ -501,6 +501,54 @@ body {
   100% { transform: scaleY(1); }
 }
 
+/* --- Toggle Bar Refactor --- */
+.mode-bar {
+  padding: 16px 24px;
+  border-radius: 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.mode-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pill-btn {
+  border-radius: 100px;
+  padding: 8px 24px;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.pill-btn.primary {
+  background: var(--primary-blue);
+  color: white;
+}
+
+.clear-btn-container {
+  margin-left: auto;
+}
+
+.clear-video-btn {
+  background: var(--status-red);
+  color: white;
+  border-radius: 100px;
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .app-container {
