@@ -1,5 +1,7 @@
 # AI-Powered Queue & Crowd Prediction System 🧠📊
 
+**🌟 Live Demo:** [https://ai-queue-crowd-prediction-system.vercel.app/](https://ai-queue-crowd-prediction-system.vercel.app/)
+
 An advanced, fully browser-based Computer Vision application designed to solve the problem of unpredictable queues and overcrowding in public-facing organizations like service centers, hospitals, banks, and government offices.
 
 This project tackles **Problem Statement 2: AI-Powered Queue & Crowd Prediction System** by leveraging edge AI (TensorFlow.js) to monitor camera feeds, estimate wait times, predict queue buildups, and automatically recommend operational actions—all in real-time.
