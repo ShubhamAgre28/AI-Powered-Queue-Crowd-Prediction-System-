@@ -3,10 +3,11 @@ import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd from '@tensorflow-models/coco-ssd';
 import { Loader } from 'lucide-react';
 
-const AnalysisPanel = ({ mediaData, counters, setCounters, setTotalPeople, detectionMode, cameraAngle }) => {
+const AnalysisPanel = ({ mediaData, counters, setCounters, setTotalPeople, setCrowdDensity, detectionMode, cameraAngle }) => {
   const [model, setModel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [peopleCount, setPeopleCount] = useState(0);
+  const [crowdBoxes, setCrowdBoxes] = useState([]);
 
   const imageRef = useRef(null);
   const videoRef = useRef(null);
@@ -58,65 +59,96 @@ const AnalysisPanel = ({ mediaData, counters, setCounters, setTotalPeople, detec
           return;
         }
 
+        // Calculate crowd density (total bounding box area / image area)
+        let totalBoxArea = 0;
+        people.forEach(person => {
+          const [, , width, height] = person.bbox;
+          totalBoxArea += (width * height);
+        });
+        const currentDensity = (totalBoxArea / (imgWidth * imgHeight)) * 100;
+        if (setCrowdDensity) {
+          setCrowdDensity(currentDensity);
+        }
+
         if (detectionMode === 'crowd') {
           // Crowd Analytics Logic
-          drawCrowdBoundingBoxes(people, mediaElement, imgWidth, imgHeight);
+          const boxes = people.map((person, idx) => {
+            const [x, y, width, height] = person.bbox;
+            return {
+              id: `crowd-${idx}`,
+              css: {
+                left: `${(x / imgWidth) * 100}%`,
+                top: `${(y / imgHeight) * 100}%`,
+                width: `${(width / imgWidth) * 100}%`,
+                height: `${(height / imgHeight) * 100}%`
+              }
+            };
+          });
+          setCrowdBoxes(boxes);
         } else {
           // Queue Analysis Logic
-          let tempCounters = counters.map(c => ({ ...c, queueCount: 0, peopleList: [] }));
-          
-          people.forEach(person => {
-            const [x, y, width, height] = person.bbox;
-            const centerX = (x + width / 2) / imgWidth;
-            const centerY = (y + height / 2) / imgHeight;
+          setCounters(prevCounters => {
+            let tempCounters = prevCounters.map(c => ({ ...c, queueCount: 0, peopleList: [] }));
             
-            // Find which region they belong to
-            let assignedCounter = null;
-            for (let i = 0; i < tempCounters.length; i++) {
-              const r = tempCounters[i].region;
-              if (centerX >= r.x && centerX <= r.x + r.w && centerY >= r.y && centerY <= r.y + r.h) {
-                assignedCounter = i;
-                break;
+            people.forEach((person, idx) => {
+              const [x, y, width, height] = person.bbox;
+              
+              // Find which counter region this person is in (normalized coordinates)
+              const normX = (x + width / 2) / imgWidth;
+              const normY = (y + height / 2) / imgHeight;
+              
+              const assignedCounter = tempCounters.find(c => 
+                normX >= c.region.x && normX <= (c.region.x + c.region.w) &&
+                normY >= c.region.y && normY <= (c.region.y + c.region.h)
+              );
+              
+              if (assignedCounter) {
+                // Determine vertical position for queue ordering
+                const centerY = y + height; 
+                
+                assignedCounter.peopleList.push({
+                  id: `person-${idx}`,
+                  bbox: person.bbox,
+                  centerY: centerY,
+                  waitTime: 0, // Will calculate next
+                  css: {
+                    left: `${(x / imgWidth) * 100}%`,
+                    top: `${(y / imgHeight) * 100}%`,
+                    width: `${(width / imgWidth) * 100}%`,
+                    height: `${(height / imgHeight) * 100}%`
+                  }
+                });
               }
-            }
-            
-            if (assignedCounter !== null) {
-              tempCounters[assignedCounter].peopleList.push({
-                bbox: person.bbox,
-                centerY: centerY,
-                waitTime: 0 // Will calculate next
-              });
-            }
-          });
-          
-          // Calculate wait times
-          tempCounters.forEach(counter => {
-            // Sort based on camera angle
-            if (cameraAngle === 'bottom') {
-              // Counter is at the bottom of the screen (larger Y is front of line)
-              counter.peopleList.sort((a, b) => b.centerY - a.centerY);
-            } else {
-              // Counter is at the top of the screen (smaller Y is front of line)
-              counter.peopleList.sort((a, b) => a.centerY - b.centerY);
-            }
-            
-            counter.queueCount = counter.peopleList.length;
-            
-            counter.peopleList.forEach((person, index) => {
-              person.waitTime = Math.round((index + 1) * counter.serviceRate);
             });
             
-            counter.waitTime = counter.queueCount > 0 ? counter.peopleList[counter.peopleList.length - 1].waitTime : 0;
+            // Calculate wait times
+            tempCounters.forEach(counter => {
+              // Sort based on camera angle
+              if (cameraAngle === 'bottom') {
+                // Counter is at the bottom of the screen (larger Y is front of line)
+                counter.peopleList.sort((a, b) => b.centerY - a.centerY);
+              } else {
+                // Counter is at the top of the screen (smaller Y is front of line)
+                counter.peopleList.sort((a, b) => a.centerY - b.centerY);
+              }
+              
+              counter.queueCount = counter.peopleList.length;
+              
+              counter.peopleList.forEach((person, index) => {
+                person.waitTime = Math.round((index + 1) * counter.serviceRate);
+              });
+              
+              counter.waitTime = counter.queueCount > 0 ? counter.peopleList[counter.peopleList.length - 1].waitTime : 0;
+              
+              // Determine status
+              if (counter.waitTime < 10) counter.status = 'GREEN';
+              else if (counter.waitTime < 20) counter.status = 'YELLOW';
+              else if (counter.waitTime < 30) counter.status = 'ORANGE';
+              else counter.status = 'RED';
+            });
             
-            // Determine status
-            if (counter.waitTime < 10) counter.status = 'GREEN';
-            else if (counter.waitTime < 20) counter.status = 'YELLOW';
-            else if (counter.waitTime < 30) counter.status = 'ORANGE';
-            else counter.status = 'RED';
+            return tempCounters;
           });
-          
-          setCounters(tempCounters);
-          drawBoundingBoxes(tempCounters, mediaElement, imgWidth, imgHeight);
         }
 
         if (mediaData.type === 'video' && !mediaElement.paused && !mediaElement.ended) {
@@ -150,83 +182,16 @@ const AnalysisPanel = ({ mediaData, counters, setCounters, setTotalPeople, detec
       };
     }
 
-  }, [model, mediaData, detectionMode, cameraAngle]);
+  }, [model, mediaData, detectionMode, cameraAngle, setTotalPeople]);
 
-  const drawCrowdBoundingBoxes = (people, mediaElement, naturalWidth, naturalHeight) => {
-    const canvas = canvasRef.current;
-    if (!canvas || !mediaElement) return;
 
-    canvas.width = mediaElement.clientWidth;
-    canvas.height = mediaElement.clientHeight;
-
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const scaleX = canvas.width / naturalWidth;
-    const scaleY = canvas.height / naturalHeight;
-
-    people.forEach(person => {
-      const [x, y, width, height] = person.bbox;
-      
-      const scaledX = x * scaleX;
-      const scaledY = y * scaleY;
-      const scaledWidth = width * scaleX;
-      const scaledHeight = height * scaleY;
-
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
-    });
-  };
-
-  const drawBoundingBoxes = (countersData, mediaElement, naturalWidth, naturalHeight) => {
-    const canvas = canvasRef.current;
-    if (!canvas || !mediaElement) return;
-
-    // Match canvas size to the exact rendered size of the media element
-    canvas.width = mediaElement.clientWidth;
-    canvas.height = mediaElement.clientHeight;
-
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Because the container now shrink-wraps the media, clientWidth/Height exactly matches the rendered image
-    const scaleX = canvas.width / naturalWidth;
-    const scaleY = canvas.height / naturalHeight;
-
-    countersData.forEach(counter => {
-      let color = '#3b82f6';
-      if (counter.status === 'GREEN') color = '#22c55e';
-      if (counter.status === 'YELLOW') color = '#eab308';
-      if (counter.status === 'ORANGE') color = '#f97316';
-      if (counter.status === 'RED') color = '#ef4444';
-
-      counter.peopleList.forEach(person => {
-        const [x, y, width, height] = person.bbox;
-        
-        const scaledX = x * scaleX;
-        const scaledY = y * scaleY;
-        const scaledWidth = width * scaleX;
-        const scaledHeight = height * scaleY;
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
-
-        ctx.fillStyle = color;
-        ctx.fillRect(scaledX, scaledY - 24, 60, 24);
-
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 14px Outfit, sans-serif';
-        ctx.fillText(`${person.waitTime} min`, scaledX + 6, scaledY - 8);
-      });
-    });
-  };
 
   return (
     <div className="clay-card" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="flex-between">
-        <h3>Queue Analysis</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <h3 style={{ margin: 0 }}>Queue Analysis</h3>
+        </div>
         <div className="badge blue" style={{ fontSize: '1rem', padding: '8px 16px' }}>
           Total Detected: {peopleCount}
         </div>
@@ -253,6 +218,7 @@ const AnalysisPanel = ({ mediaData, counters, setCounters, setTotalPeople, detec
             <video 
               ref={videoRef} 
               src={mediaData.url} 
+              autoPlay
               controls 
               loop 
               muted
@@ -260,10 +226,59 @@ const AnalysisPanel = ({ mediaData, counters, setCounters, setTotalPeople, detec
             />
           )}
           
-          <canvas 
-            ref={canvasRef} 
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }} 
-          />
+          {/* DOM Overlays for CSS Animations */}
+          {detectionMode === 'crowd' && crowdBoxes.map((box, pIdx) => (
+            <div key={box.id} className="animate-box" style={{
+              position: 'absolute',
+              left: box.css.left,
+              top: box.css.top,
+              width: box.css.width,
+              height: box.css.height,
+              border: `3px solid #3b82f6`,
+              borderRadius: 'var(--radius-sm)',
+              pointerEvents: 'none',
+              zIndex: 20,
+              animationDelay: `${(pIdx % 10) * 0.05}s`
+            }}>
+            </div>
+          ))}
+
+          {detectionMode === 'queue' && counters.map((counter, cIdx) => (
+            (counter.peopleList || []).map((person, pIdx) => {
+              const color = counter.status === 'RED' ? '#ef4444' : counter.status === 'ORANGE' ? '#f97316' : counter.status === 'YELLOW' ? '#eab308' : '#22c55e';
+              return (
+                <div key={`c${cIdx}-p${pIdx}`} className="animate-box" style={{
+                  position: 'absolute',
+                  left: person.css.left,
+                  top: person.css.top,
+                  width: person.css.width,
+                  height: person.css.height,
+                  border: `3px solid ${color}`,
+                  borderRadius: 'var(--radius-sm)',
+                  pointerEvents: 'none',
+                  zIndex: 20
+                }}>
+                  <div className="animate-badge" style={{
+                    position: 'absolute',
+                    top: '-32px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'var(--bg-color)',
+                    padding: '4px 12px',
+                    borderRadius: 'var(--radius-full)',
+                    boxShadow: 'var(--clay-outer)',
+                    color: color,
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    whiteSpace: 'nowrap',
+                    animationDelay: `${0.1 + (pIdx * 0.15)}s`
+                  }}>
+                    {person.waitTime} min
+                  </div>
+                </div>
+              );
+            })
+          ))}
           
           <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
         </div>

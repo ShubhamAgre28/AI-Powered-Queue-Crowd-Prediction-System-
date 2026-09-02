@@ -5,7 +5,7 @@ export const AnalyticsMock = ({ counters, totalPeople, detectionMode }) => {
   const maxWait = Math.max(...counters.map(c => c.waitTime), 10); // Minimum scale of 10
   
   return (
-    <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="dashboard-content animate-enter stagger-1" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="clay-card">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
           <BarChart2 size={24} color="var(--primary-blue)" /> Live Queue Analytics
@@ -105,7 +105,7 @@ export const PredictionsMock = ({ counters, totalPeople, detectionMode }) => {
   const forecastedWait = busiestCounter ? Math.round(busiestCounter.waitTime * 1.5) : 0;
   
   return (
-    <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="dashboard-content animate-enter stagger-1" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="clay-card">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
           <LineChart size={24} color="var(--status-purple)" /> AI Traffic Forecast
@@ -214,7 +214,7 @@ export const AlertsMock = ({ counters, totalPeople, detectionMode }) => {
   const displayAlerts = [...activeAlerts, ...history];
 
   return (
-    <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="dashboard-content animate-enter stagger-1" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="clay-card">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
           <Bell size={24} color="var(--status-orange)" /> Live System Alerts
@@ -244,7 +244,7 @@ export const AlertsMock = ({ counters, totalPeople, detectionMode }) => {
   );
 };
 
-export const ReportsMock = ({ counters, totalPeople, detectionMode }) => {
+export const ReportsMock = ({ counters, totalPeople }) => {
   const [generating, setGenerating] = useState(false);
   const [reportReady, setReportReady] = useState(false);
 
@@ -257,7 +257,7 @@ export const ReportsMock = ({ counters, totalPeople, detectionMode }) => {
   };
 
   return (
-    <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="dashboard-content animate-enter stagger-1" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div className="clay-card">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
           <FileText size={24} color="var(--status-green)" /> Session Reports

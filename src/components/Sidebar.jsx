@@ -14,13 +14,13 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   ];
 
   return (
-    <aside className="sidebar">
-      <div className="brand">
-        <h1>QueueSmart AI</h1>
-        <p>Predict. Optimize. Serve Better.</p>
+    <aside className="sidebar animate-enter stagger-0">
+      <div className="brand animate-enter stagger-1">
+        <h1>WLWF</h1>
+        <p>Wait Less, Work Fast.</p>
       </div>
 
-      <nav className="nav-links">
+      <nav className="nav-links animate-enter stagger-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (

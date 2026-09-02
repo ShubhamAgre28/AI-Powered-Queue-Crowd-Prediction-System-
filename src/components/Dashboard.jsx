@@ -1,5 +1,5 @@
-import React from 'react';
-import { Users, Clock, Activity, TrendingUp, CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, Clock, Activity, TrendingUp, CheckCircle, AlertTriangle, X } from 'lucide-react';
 
 const StatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
   <div className="clay-card stat-card" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -8,7 +8,7 @@ const StatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
       padding: '16px', 
       borderRadius: 'var(--radius-sm)',
       boxShadow: 'var(--clay-inner)',
-      color: `var(--status-${colorClass})` || 'var(--primary-blue)'
+      color: colorClass ? `var(--status-${colorClass})` : 'var(--primary-blue)'
     }}>
       <Icon size={32} />
     </div>
@@ -23,8 +23,11 @@ const StatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
 import PredictionChart from './PredictionChart';
 import AnalysisPanel from './AnalysisPanel';
 
-const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeople, detectionMode, setDetectionMode, cameraAngle, setCameraAngle }) => {
-  
+const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeople, detectionMode, setDetectionMode, cameraAngle, setCameraAngle, clearMedia }) => {
+  const [hasShownAlert, setHasShownAlert] = useState(false);
+  const [showAlertPopup, setShowAlertPopup] = useState(false);
+  const [crowdDensity, setCrowdDensity] = useState(0);
+
   // Calculate dynamic stats
   const activeCounters = counters.length;
   const totalWaitTime = counters.reduce((sum, c) => sum + c.waitTime, 0);
@@ -41,11 +44,40 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
     return a.waitTime - b.waitTime;
   })[0];
 
+  useEffect(() => {
+    if (detectionMode === 'crowd' && crowdDensity > 25 && !hasShownAlert) {
+      setShowAlertPopup(true);
+      setHasShownAlert(true);
+    }
+  }, [crowdDensity, detectionMode, hasShownAlert]);
+
   return (
-    <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative' }}>
       
+      {/* Alert Popup Modal */}
+      {showAlertPopup && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
+          <div className="clay-card animate-enter" style={{ background: 'var(--bg-color)', maxWidth: '400px', width: '90%', padding: '32px', border: '2px solid var(--status-red)', boxShadow: '0 10px 40px rgba(239, 68, 68, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ background: 'var(--status-red)' + '20', padding: '16px', borderRadius: '50%', color: 'var(--status-red)', marginBottom: '16px' }}>
+              <AlertTriangle size={48} />
+            </div>
+            <h2 style={{ color: 'var(--status-red)', margin: '0 0 16px 0' }}>Overcrowding Alert!</h2>
+            <p style={{ margin: '0 0 24px 0', fontSize: '1.1rem' }}>
+              <strong>Critical Crowd Density Detected.</strong> There are currently {totalPeople} individuals in the monitored area. Please deploy crowd control measures.
+            </p>
+            <button 
+              className="btn primary" 
+              onClick={() => setShowAlertPopup(false)}
+              style={{ background: 'var(--status-red)', width: '100%', padding: '12px' }}
+            >
+              Acknowledge
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mode Toggle Bar */}
-      <div className="clay-card flex-between" style={{ padding: '16px 24px', borderRadius: '100px', flexWrap: 'wrap', gap: '16px' }}>
+      <div className="clay-card flex-between animate-enter stagger-1" style={{ padding: '16px 24px', borderRadius: '100px', flexWrap: 'wrap', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Analysis Mode</h3>
           <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '100px', padding: '4px' }}>
@@ -89,6 +121,27 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             </div>
           </div>
         )}
+        <div style={{ marginLeft: 'auto' }}>
+          <button 
+            className="btn" 
+            onClick={clearMedia} 
+            style={{ 
+              background: 'var(--status-red)', 
+              color: 'white', 
+              borderRadius: '100px', 
+              padding: '8px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+            }}
+          >
+            <X size={18} /> Clear Video
+          </button>
+        </div>
       </div>
 
       {mediaData && (
@@ -98,6 +151,7 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             counters={counters} 
             setCounters={setCounters} 
             setTotalPeople={setTotalPeople} 
+            setCrowdDensity={setCrowdDensity}
             detectionMode={detectionMode}
             cameraAngle={cameraAngle}
           />
@@ -107,7 +161,7 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
       {detectionMode === 'queue' ? (
         // --- QUEUE MODE DASHBOARD ---
         <>
-          <div className="dashboard-grid">
+          <div className="dashboard-grid animate-enter stagger-2">
             <StatCard 
               title="TOTAL PEOPLE" 
               value={totalPeople} 
@@ -131,7 +185,7 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             />
           </div>
 
-          <div className="dashboard-grid">
+          <div className="dashboard-grid animate-enter stagger-3">
             <StatCard 
               title="BUSIEST COUNTER" 
               value={busiestCounter ? busiestCounter.name : '--'} 
@@ -155,7 +209,7 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             />
           </div>
 
-          <div className="clay-card" style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+          <div className="clay-card animate-enter stagger-4" style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
             <div style={{ flex: 1 }}>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--status-purple)' }}>
                 <TrendingUp /> AI RECOMMENDATION
@@ -180,7 +234,7 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
               )}
 
               {busiestCounter && busiestCounter.waitTime > 10 && (
-                <div style={{ marginTop: '16px', background: 'var(--status-red)' + '10', padding: '16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--status-red)' }}>
+                <div className="alert-card" style={{ marginTop: '16px', background: 'var(--status-red)' + '10', padding: '16px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--status-red)' }}>
                   <h4 style={{ color: 'var(--status-red)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
                     <AlertTriangle size={18} /> ⚠ OVERCROWDING PREDICTION
                   </h4>
@@ -193,32 +247,65 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             </div>
             
             {fastestCounter && fastestCounter.queueCount > 0 && (
-              <div style={{ 
-                background: 'var(--status-green)', 
-                color: 'white', 
-                padding: '32px', 
-                borderRadius: 'var(--radius-sm)',
-                textAlign: 'center',
-                minWidth: '250px',
-                boxShadow: 'var(--clay-outer-sm)'
-              }}>
-                <h4 style={{ margin: 0, opacity: 0.9 }}>⚡ FASTEST COUNTER</h4>
-                <div style={{ fontSize: '2rem', fontWeight: 'bold', margin: '8px 0' }}>{fastestCounter.name}</div>
-                <p style={{ margin: 0 }}>Estimated Wait: {fastestCounter.waitTime} mins</p>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '300px' }}>
+                {/* Routing Visualizer */}
+                <div style={{ 
+                  background: 'var(--primary-blue)', 
+                  color: 'white', 
+                  padding: '12px 24px', 
+                  borderRadius: '100px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: 'var(--clay-outer-sm)',
+                  zIndex: 2
+                }}>
+                  👤 New Customer
+                </div>
+                
+                <svg width="200" height="80" style={{ margin: '-10px 0', zIndex: 1 }}>
+                  <path 
+                    d="M 100 0 L 100 40 Q 100 50 110 50 L 190 50 Q 200 50 200 60 L 200 80" 
+                    fill="none" 
+                    stroke="var(--status-green)" 
+                    strokeWidth="4" 
+                    className="svg-route-line"
+                  />
+                  <circle cx="200" cy="80" r="4" fill="var(--status-green)" />
+                </svg>
+
+                <div className="best-counter-card" style={{ 
+                  background: 'var(--bg-color)', 
+                  padding: '24px', 
+                  borderRadius: 'var(--radius-md)',
+                  textAlign: 'center',
+                  width: '100%',
+                  position: 'relative',
+                  zIndex: 2
+                }}>
+                  <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--status-green)', color: 'white', padding: '4px 12px', borderRadius: '100px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                    BEST CHOICE
+                  </div>
+                  <h4 style={{ margin: '8px 0', fontSize: '1.4rem' }}>{fastestCounter.name}</h4>
+                  <p style={{ margin: 0, color: 'var(--text-secondary)', fontWeight: 'bold' }}>Estimated Wait: {fastestCounter.waitTime} mins</p>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="clay-card">
+          <div className="clay-card animate-enter stagger-5">
             <h3>Live Counter Status</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '20px' }}>
-              {counters.map(counter => (
-                <div key={counter.id} style={{ 
-                  padding: '16px', 
-                  borderRadius: 'var(--radius-sm)', 
-                  border: `2px solid var(--status-${counter.status.toLowerCase()})`,
-                  background: `var(--status-${counter.status.toLowerCase()})` + '10'
-                }}>
+              {counters.map(counter => {
+                const isBest = fastestCounter && counter.id === fastestCounter.id;
+                return (
+                  <div key={counter.id} className={isBest ? "best-counter-card" : "clay-card"} style={{ 
+                    padding: '16px', 
+                    borderRadius: 'var(--radius-sm)', 
+                    border: isBest ? undefined : `2px solid var(--status-${counter.status.toLowerCase()})`,
+                    background: `var(--bg-color)`
+                  }}>
                   <div className="flex-between" style={{ marginBottom: '12px' }}>
                     <h4 style={{ margin: 0 }}>{counter.name}</h4>
                     <span className={`badge ${counter.status.toLowerCase()}`}>{counter.status}</span>
@@ -227,8 +314,9 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
                     <span>{counter.queueCount} People</span>
                     <span style={{ fontWeight: 'bold' }}>{counter.waitTime} min wait</span>
                   </div>
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
           <PredictionChart counters={counters} />
@@ -246,10 +334,10 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             />
             <StatCard 
               title="CROWD DENSITY" 
-              value={totalPeople > 10 ? 'HIGH' : totalPeople > 5 ? 'MEDIUM' : 'LOW'} 
-              subtitle="Area utilization level" 
+              value={crowdDensity > 25 ? 'HIGH' : crowdDensity > 10 ? 'MEDIUM' : 'LOW'} 
+              subtitle={`${Math.round(crowdDensity)}% Area utilization`} 
               icon={Activity} 
-              colorClass={totalPeople > 10 ? 'red' : totalPeople > 5 ? 'yellow' : 'green'} 
+              colorClass={crowdDensity > 25 ? 'red' : crowdDensity > 10 ? 'yellow' : 'green'} 
             />
           </div>
 
@@ -258,14 +346,14 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
               <TrendingUp /> CROWD MANAGEMENT RECOMMENDATION
             </h3>
             <div style={{ marginTop: '16px' }}>
-              {totalPeople > 10 ? (
+              {crowdDensity > 25 ? (
                 <div style={{ background: 'var(--status-red)' + '10', padding: '16px', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid var(--status-red)' }}>
                   <h4 style={{ color: 'var(--status-red)', margin: '0 0 8px 0' }}>⚠ Critical Density Reached</h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-                    The current area is heavily congested. Consider opening overflow areas, dispatching crowd control staff, or restricting new entries temporarily.
+                    The current area is heavily congested ({Math.round(crowdDensity)}% capacity). Consider opening overflow areas, dispatching crowd control staff, or restricting new entries temporarily.
                   </p>
                 </div>
-              ) : totalPeople > 5 ? (
+              ) : crowdDensity > 10 ? (
                 <div style={{ background: 'var(--status-yellow)' + '10', padding: '16px', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid var(--status-yellow)' }}>
                   <h4 style={{ color: 'var(--status-yellow)', margin: '0 0 8px 0' }}>Moderate Activity</h4>
                   <p style={{ margin: 0, color: 'var(--text-secondary)' }}>

@@ -64,6 +64,8 @@ const PredictionChart = ({ counters }) => {
                 stroke={colors[index % colors.length]} 
                 strokeWidth={3}
                 activeDot={{ r: 8 }}
+                animationDuration={2500}
+                animationEasing="ease-in-out"
               />
             ))}
           </LineChart>
