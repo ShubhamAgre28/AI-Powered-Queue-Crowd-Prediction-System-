@@ -1,7 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Upload, Users, BarChart3, LineChart, Bell, FileText, Settings } from 'lucide-react';
 
-const Sidebar = ({ activeTab, setActiveTab }) => {
+const Sidebar = ({ activeTab, setActiveTab, hasActiveAlert }) => {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'upload', label: 'Upload & Analyze', icon: Upload },
@@ -29,7 +29,21 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
               className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
               onClick={() => setActiveTab(item.id)}
             >
-              <Icon size={20} />
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <Icon size={20} />
+                {item.id === 'alerts' && hasActiveAlert && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-2px',
+                    right: '-4px',
+                    width: '8px',
+                    height: '8px',
+                    backgroundColor: 'var(--status-red)',
+                    borderRadius: '50%',
+                    boxShadow: '0 0 0 2px var(--bg-color)'
+                  }} />
+                )}
+              </div>
               <span>{item.label}</span>
             </div>
           );

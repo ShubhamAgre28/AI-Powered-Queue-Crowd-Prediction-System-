@@ -23,9 +23,7 @@ const StatCard = ({ title, value, subtitle, icon: Icon, colorClass }) => (
 import PredictionChart from './PredictionChart';
 import AnalysisPanel from './AnalysisPanel';
 
-const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeople, detectionMode, setDetectionMode, cameraAngle, setCameraAngle, clearMedia }) => {
-  const [hasShownAlert, setHasShownAlert] = useState(false);
-  const [showAlertPopup, setShowAlertPopup] = useState(false);
+const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeople, detectionMode, setDetectionMode, cameraAngle, setCameraAngle, clearMedia, setHasActiveAlert }) => {
   const [crowdDensity, setCrowdDensity] = useState(0);
 
   // Calculate dynamic stats
@@ -45,36 +43,17 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
   })[0];
 
   useEffect(() => {
-    if (detectionMode === 'crowd' && crowdDensity > 25 && !hasShownAlert) {
-      setShowAlertPopup(true);
-      setHasShownAlert(true);
+    if (detectionMode === 'crowd' && crowdDensity > 25) {
+      if (setHasActiveAlert) setHasActiveAlert(true);
+    } else {
+      if (setHasActiveAlert) setHasActiveAlert(false);
     }
-  }, [crowdDensity, detectionMode, hasShownAlert]);
+  }, [crowdDensity, detectionMode, setHasActiveAlert]);
 
   return (
     <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative' }}>
       
-      {/* Alert Popup Modal */}
-      {showAlertPopup && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(5px)' }}>
-          <div className="clay-card animate-enter" style={{ background: 'var(--bg-color)', maxWidth: '400px', width: '90%', padding: '32px', border: '2px solid var(--status-red)', boxShadow: '0 10px 40px rgba(239, 68, 68, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <div style={{ background: 'var(--status-red)' + '20', padding: '16px', borderRadius: '50%', color: 'var(--status-red)', marginBottom: '16px' }}>
-              <AlertTriangle size={48} />
-            </div>
-            <h2 style={{ color: 'var(--status-red)', margin: '0 0 16px 0' }}>Overcrowding Alert!</h2>
-            <p style={{ margin: '0 0 24px 0', fontSize: '1.1rem' }}>
-              <strong>Critical Crowd Density Detected.</strong> There are currently {totalPeople} individuals in the monitored area. Please deploy crowd control measures.
-            </p>
-            <button 
-              className="btn primary" 
-              onClick={() => setShowAlertPopup(false)}
-              style={{ background: 'var(--status-red)', width: '100%', padding: '12px' }}
-            >
-              Acknowledge
-            </button>
-          </div>
-        </div>
-      )}
+
 
       {/* Mode Toggle Bar */}
       <div className="clay-card flex-between animate-enter stagger-1" style={{ padding: '16px 24px', borderRadius: '100px', flexWrap: 'wrap', gap: '16px' }}>

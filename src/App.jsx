@@ -26,6 +26,7 @@ function App() {
   ]);
   
   const [totalPeople, setTotalPeople] = useState(0);
+  const [hasActiveAlert, setHasActiveAlert] = useState(false);
 
   const clearMedia = () => {
     setMediaData(null);
@@ -49,6 +50,7 @@ function App() {
             cameraAngle={cameraAngle}
             setCameraAngle={setCameraAngle}
             clearMedia={clearMedia}
+            setHasActiveAlert={setHasActiveAlert}
           />
         );
       case 'upload':
@@ -99,7 +101,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} hasActiveAlert={hasActiveAlert} />
       
       <main className="main-content">
         <header className="header flex-between animate-enter stagger-1">
