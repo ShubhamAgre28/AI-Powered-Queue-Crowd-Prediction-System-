@@ -57,9 +57,9 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
 
       {/* Mode Toggle Bar */}
       <div className="clay-card flex-between mode-bar animate-enter stagger-1" style={{ padding: '16px 24px', borderRadius: '100px', flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+        <div className="mode-bar-item" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Analysis Mode</h3>
-          <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '100px', padding: '4px' }}>
+          <div className="pill-container" style={{ display: 'flex', background: '#f1f5f9', borderRadius: '100px', padding: '4px' }}>
             <button 
               className={`btn ${detectionMode === 'queue' ? 'primary' : ''}`}
               onClick={() => setDetectionMode('queue')}
@@ -78,9 +78,9 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
         </div>
         
         {detectionMode === 'queue' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="mode-bar-item" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Camera Angle</h3>
-            <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '100px', padding: '4px' }}>
+            <div className="pill-container" style={{ display: 'flex', background: '#f1f5f9', borderRadius: '100px', padding: '4px' }}>
               <button 
                 className={`btn ${cameraAngle === 'top' ? 'primary' : ''}`}
                 onClick={() => setCameraAngle('top')}
