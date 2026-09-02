@@ -554,7 +554,7 @@ body {
   }
   
   .dashboard-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
   
   .clay-card {
@@ -567,5 +567,19 @@ body {
   
   .upload-dropzone h3 {
     font-size: 1.25rem !important;
+  }
+  
+  .mode-bar {
+    border-radius: var(--radius-md) !important;
+  }
+  
+  .clear-btn-container {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+  
+  .clear-btn-container button {
+    width: 100%;
+    justify-content: center;
   }
 }

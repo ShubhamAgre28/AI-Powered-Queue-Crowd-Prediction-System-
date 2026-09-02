@@ -109,7 +109,7 @@ function App() {
             <h2 className="animate-enter stagger-2">{getTabTitle()}</h2>
             <p className="animate-enter stagger-3">Here's what's happening with your queues.</p>
           </div>
-          <div className="animate-enter stagger-4" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="animate-enter stagger-4" style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
             <button 
               className="clay-button" 
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}

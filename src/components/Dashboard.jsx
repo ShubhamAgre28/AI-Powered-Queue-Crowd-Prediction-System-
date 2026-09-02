@@ -56,8 +56,8 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
 
 
       {/* Mode Toggle Bar */}
-      <div className="clay-card flex-between animate-enter stagger-1" style={{ padding: '16px 24px', borderRadius: '100px', flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div className="clay-card flex-between mode-bar animate-enter stagger-1" style={{ padding: '16px 24px', borderRadius: '100px', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Analysis Mode</h3>
           <div style={{ display: 'flex', background: '#f1f5f9', borderRadius: '100px', padding: '4px' }}>
             <button 
@@ -100,7 +100,7 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             </div>
           </div>
         )}
-        <div style={{ marginLeft: 'auto' }}>
+        <div className="clear-btn-container" style={{ marginLeft: 'auto' }}>
           <button 
             className="btn" 
             onClick={clearMedia} 
@@ -188,7 +188,7 @@ const Dashboard = ({ counters, totalPeople, mediaData, setCounters, setTotalPeop
             />
           </div>
 
-          <div className="clay-card animate-enter stagger-4" style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
+          <div className="clay-card animate-enter stagger-4" style={{ display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'flex-start' }}>
             <div style={{ flex: 1 }}>
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--status-purple)' }}>
                 <TrendingUp /> AI RECOMMENDATION
