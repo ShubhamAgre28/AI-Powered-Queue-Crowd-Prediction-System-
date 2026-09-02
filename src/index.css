@@ -500,3 +500,72 @@ body {
   50% { transform: scaleY(1.05); }
   100% { transform: scaleY(1); }
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    padding: 24px 16px;
+    height: auto;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  }
+  
+  .brand {
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  
+  .brand h1 {
+    font-size: 2.2rem;
+  }
+  
+  .nav-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .nav-item {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  
+  .main-content {
+    padding: 16px;
+    height: auto;
+    overflow-y: visible;
+  }
+  
+  .flex-between {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .header h2 {
+    font-size: 1.6rem;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .clay-card {
+    padding: 16px;
+  }
+  
+  .upload-dropzone {
+    padding: 32px 16px !important;
+  }
+  
+  .upload-dropzone h3 {
+    font-size: 1.25rem !important;
+  }
+}
